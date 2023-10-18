@@ -1,23 +1,26 @@
 import './App.css'
-import Header from "./header"
-import Content from "./content"
-import Total from "./total"
+import Content from './content';
+import course from './course.js';
+import Headers from './header';
+import Total from './total';
 
 function App() {
-  const course = 'Half Stack application development'
-  const exercises1 = 10
-  const exercises2 = 7
-  const exercises3 = 14
+  const titleCourse = course.name;
+  console.log(titleCourse)
+
+  const totalEjercios = course.parts.reduce((total, part) => total + part.exercises, 0);
+
+  console.log(totalEjercios)
 
   return (
     <>
       <div className="card">
-        <Header titulo={course} />
+        <Headers titulo={titleCourse} />
         <Content />
-        <Total total={exercises1 + exercises2 + exercises3} />
+        <Total total={totalEjercios} />
       </div>
     </>
   )
 }
 
-export default App
+export default App;

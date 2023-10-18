@@ -1,13 +1,11 @@
-import React from 'react';
-
-const Total = (props) => {
+const Total = ({total}) => {
     return (
-        <div>
-            <p>
-                Numero Total de Ejercicios {props.total}
-            </p>
-        </div>
+      <div>
+        <p>
+          Numero Total de Ejercicios {total}
+        </p>
+      </div>
     );
-}
+  }
 
 export default Total;
