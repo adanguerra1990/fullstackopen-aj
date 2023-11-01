@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Filter from './Filter'
 import '../../App.css'
+import axios from 'axios'
 import Persons from './Persons'
 import PersonForm from './PersonForm'
 
@@ -17,11 +18,22 @@ const App = () => {
     const [newNumbers, setNewNumbers] = useState('');
     const [searchName, setSearchName] = useState('');
 
+    const hook = () => {
+        console.log('efect');
+        axios
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                console.log('promesa Coomplatado');
+                setPersons(response.data);
+            }) 
+    }
+    useEffect(hook, [])
+
     //   Funcion para agregar un nuevo numero
     const addName = (event) => {
         event.preventDefault();
 
-        // comprovamos que los campos no esten vacios
+        // comprobamos que los campos no esten vacios
         if (newName.trim() === '' || newNumbers.trim === '') {
             alert('Name and numbers cannot be ampty');
             return;

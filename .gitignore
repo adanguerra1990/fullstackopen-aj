@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 prueba1
-parte2
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +23,4 @@ parte2
 *.njsproj
 *.sln
 *.sw?
+*.env
