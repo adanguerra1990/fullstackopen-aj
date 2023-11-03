@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import Filter from './Filter'
 import '../../App.css'
-import axios from 'axios'
 import Persons from './Persons'
 import PersonForm from './PersonForm'
+import personServices from '../services/persons'
 
 
 const App = () => {
@@ -18,46 +18,96 @@ const App = () => {
     const [newNumbers, setNewNumbers] = useState('');
     const [searchName, setSearchName] = useState('');
 
-    const hook = () => {
-        console.log('efect');
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                console.log('promesa Coomplatado');
-                setPersons(response.data);
-            }) 
+
+    useEffect(() => {
+        personServices
+            .getAll()
+            .then(inicialPersons => {
+                console.log('value..', inicialPersons)
+                setPersons(inicialPersons)
+            })
+    }, []);
+
+    // Validar que los campos no estén vacíos
+    const isValid = (name, number) => {
+        if (name.trim().length === 0 || number.trim().length === 0) {
+            alert('Name and numbers cannot be ampty');
+            return false;
+        }
+        return true;
+    };
+
+    // Verificar si el nombre y el número ya están almacenados en el servidor
+    const isDuplicate = (name, number) => {
+        return persons.some(person => person.name === name && person.number === number)
     }
-    useEffect(hook, [])
 
     //   Funcion para agregar un nuevo numero
     const addName = (event) => {
         event.preventDefault();
 
         // comprobamos que los campos no esten vacios
-        if (newName.trim() === '' || newNumbers.trim === '') {
-            alert('Name and numbers cannot be ampty');
-            return;
-        }
-
-        // Comprobamos si el nombre y el numero existe
-        const nameAndNumberExists = persons.some(person => person.name.toLowerCase() === newName.toLowerCase() && person.numbers === newNumbers);
-
-        if (nameAndNumberExists) {
-            alert(`The name ${newName} and number ${newNumbers} already exists`);
-            return;
+        if (!isValid(newName, newNumbers) || isDuplicate(newName, newNumbers)) {
+            return alert(`The name ${newName} and number ${newNumbers} already exists`);
         }
 
         // Guardamos el los datos ingresados al formulario
         const newPerson = {
             name: newName,
-            numbers: newNumbers,
-            id: persons.length + 1,
+            number: newNumbers,
+            // id: persons.length + 1,
         };
-        console.log(newPerson)
-        setPersons(persons.concat(newPerson));
-        setNewName('');
-        setNewNumbers('');
-    }
+
+        const personExists = persons.find(persons => persons.name === newName);
+
+        if (personExists) {
+            // Confirmar la actualización del número
+            const confirmUpdate = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`);
+
+            if (confirmUpdate) {
+                // Actualizamos el número de la persona existente
+                personServices
+                    .updatePerson(personExists.id, newPerson)
+                    .then(returnedPerson => {
+                        console.log('ValueUpdate...', returnedPerson);
+                        setPersons(persons.map(person =>
+                            person.id !== personExists.id ? person : returnedPerson)
+                        );
+                        setNewName('');
+                        setNewNumbers('');
+                    })
+            }
+        } else {
+            // Creamos una nueva persona
+            personServices
+                .cretePerson(newPerson)
+                .then(returnedPerson => {
+                    console.log('ValueCreate..', returnedPerson)
+                    setPersons(persons.concat(returnedPerson));
+                    setNewName('');
+                    setNewNumbers('');
+                })
+        }
+    };
+
+    const handleDelete = (id) => {
+        // Confirmar la eliminacion
+        const person = persons.find(p => p.id === id);
+
+        if (window.confirm(`Deleted ${person.name}`)) {
+            // Eliminar del servidor
+            personServices
+                .deletePerson(id)
+                .then(() => {
+                    console.log('valueDelete..', id)
+                    setPersons(persons.filter((person) => person.id !== id));
+                })
+                .catch(error => {
+                    alert(`The person '${person.name}' was already deleted from server`);
+                    setPersons(persons.filter((person) => person.id !== id));
+                })
+        }
+    };
 
     // Funciones para manejar los cambios en los campos de entrada
     const handleNameChange = (event) => {
@@ -88,6 +138,7 @@ const App = () => {
                 handleNameChange={handleNameChange}
                 newNumbers={newNumbers}
                 handleNumberChange={handleNumberChange}
+
             />
 
             <h1>Numbers</h1>
@@ -95,6 +146,7 @@ const App = () => {
             <Persons
                 persons={persons}
                 searchName={searchName}
+                onDelete={handleDelete}
             />
         </div>
     );

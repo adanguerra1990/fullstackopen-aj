@@ -2,7 +2,7 @@
  * componete para manejar el formulario, para agregar una nueva persona
  */
 
-const PersonForm = ({ addName, newName, handleNameChange, newNumbers, handleNumberChange }) => (
+const PersonForm = ({ addName, newName, handleNameChange, newNumbers, handleNumberChange  }) => (
     <form onSubmit={addName}>
         <div>
             Name: <input value={newName} onChange={handleNameChange} />
