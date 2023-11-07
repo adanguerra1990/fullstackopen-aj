@@ -4,6 +4,9 @@ import '../../App.css'
 import Persons from './Persons'
 import PersonForm from './PersonForm'
 import personServices from '../services/persons'
+import Notification from '../components/Notification'
+
+
 
 
 const App = () => {
@@ -17,6 +20,7 @@ const App = () => {
     const [newName, setNewName] = useState('');
     const [newNumbers, setNewNumbers] = useState('');
     const [searchName, setSearchName] = useState('');
+    const [notification, setNotification] = useState({ messge: null, type: null });
 
 
     useEffect(() => {
@@ -69,12 +73,20 @@ const App = () => {
                 personServices
                     .updatePerson(personExists.id, newPerson)
                     .then(returnedPerson => {
-                        console.log('ValueUpdate...', returnedPerson);
+                        console.log('ValueUpdate...', returnedPerson,);
+
                         setPersons(persons.map(person =>
                             person.id !== personExists.id ? person : returnedPerson)
                         );
                         setNewName('');
                         setNewNumbers('');
+                    })
+                    .catch(error => {
+                        setNotification({
+                            messge: `Information of ${newName} has already been removed from server`,
+                            type: 'error'
+                        });
+                        setTimeout(() => setNotification({ messge: null, type: null }), 5000)
                     })
             }
         } else {
@@ -83,6 +95,15 @@ const App = () => {
                 .cretePerson(newPerson)
                 .then(returnedPerson => {
                     console.log('ValueCreate..', returnedPerson)
+                    setNotification({
+                        messge: `Added ${newName}`,
+                        type: 'success'
+                    })
+
+                    setTimeout(() => setNotification({
+                        messge: null,
+                        type: null
+                    }), 5000)
                     setPersons(persons.concat(returnedPerson));
                     setNewName('');
                     setNewNumbers('');
@@ -103,7 +124,12 @@ const App = () => {
                     setPersons(persons.filter((person) => person.id !== id));
                 })
                 .catch(error => {
-                    alert(`The person '${person.name}' was already deleted from server`);
+                    // alert(`The person '${person.name}' was already deleted from server`);
+                    setNotification({
+                        messge: `Information of ${person.name} has already been removed from server`,
+                        type: 'error'
+                    });
+                    setTimeout(() => setNotification({ messge: null, type: null }), 5000)
                     setPersons(persons.filter((person) => person.id !== id));
                 })
         }
@@ -125,6 +151,7 @@ const App = () => {
     return (
         <div className='card'>
             <h1>Phonebook</h1>
+            <Notification message={notification.messge} type={notification.type} />
             <Filter
                 searchName={searchName}
                 handleSearchName={handleSearchName}
